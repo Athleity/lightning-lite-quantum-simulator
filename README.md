@@ -94,7 +94,7 @@ cl /LD /EHsc /std:c++17 /openmp /O2 /I"%PYTHON_INCLUDE%" /I"%PYBIND11_INCLUDE%" 
    bindings_v2.cpp StateVector.cpp StateVectorOptimized.cpp ^
    /link /OUT:..\build\quantum_sim_v2.pyd "%PYTHON_LIB%"
 
-#### Linux/Mac (GCC/Clang)
+### Linux/Mac (GCC/Clang)
 
 # Install pybind11
 pip install pybind11
