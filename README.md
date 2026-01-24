@@ -96,7 +96,6 @@ cl /LD /EHsc /std:c++17 /openmp /O2 /I"%PYTHON_INCLUDE%" /I"%PYBIND11_INCLUDE%" 
 
 #### Linux/Mac (GCC/Clang)
 
-```bash
 # Install pybind11
 pip install pybind11
 
