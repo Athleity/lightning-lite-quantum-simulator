@@ -94,8 +94,9 @@ cl /LD /EHsc /std:c++17 /openmp /O2 /I"%PYTHON_INCLUDE%" /I"%PYBIND11_INCLUDE%" 
    bindings_v2.cpp StateVector.cpp StateVectorOptimized.cpp ^
    /link /OUT:..\build\quantum_sim_v2.pyd "%PYTHON_LIB%"
 
-Linux/Mac (GCC/Clang)
+#### Linux/Mac (GCC/Clang)
 
+```bash
 # Install pybind11
 pip install pybind11
 
@@ -106,153 +107,7 @@ g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC \
     bindings_v2.cpp StateVector.cpp StateVectorOptimized.cpp \
     -o ../build/quantum_sim_v2.so
 
-For detailed build instructions, see BUILD_INSTRUCTIONS.md.
+###For detailed build instructions, see BUILD_INSTRUCTIONS.md
 
-💻 Usage
-Basic Example
-
-import sys
-sys.path.append('build')
-import quantum_sim_v2 as qs
-import numpy as np
-
-# Create 3-qubit state vector
-state = qs.StateVector(3)
-
-# Apply gates
-state.hadamard(0)          # Hadamard on qubit 0
-state.cnot(0, 1)           # CNOT from qubit 0 to 1
-state.rz(2, np.pi/4)       # RZ rotation on qubit 2
-
-# Get state as numpy array (zero-copy)
-amplitudes = np.array(state.get_state(), copy=False)
-print(f"State vector: {amplitudes}")
-
-# Measure probabilities
-probs = np.abs(amplitudes)**2
-print(f"Probabilities: {probs}")
-
-With Gate Fusion
-
-from python.gate_fusion import create_fused_circuit
-
-# Generate 800-gate circuit with fusion
-gates = create_fused_circuit(num_qubits=20, total_gates=800)
-
-# Execute with automatic fusion (reduces to ~200 gates)
-state = qs.StateVector(20)
-for gate_type, *params in gates:
-    if gate_type == 'h':
-        state.hadamard(params)
-    elif gate_type == 'rz':
-        state.rz(params, params[1])
-    # ... other gates
-
-📁 Project Structure
-
-D:\quantum_project\
-├── .gitignore              # Git ignore rules
-├── .vscode/                # VS Code settings
-├── LICENSE                 # MIT License
-├── README.md               # This file
-├── benchmarks/             # Performance benchmarks
-│   ├── benchmark_cache.py
-│   ├── benchmark_fusion.py
-│   ├── generate_graphs.py
-│   └── test_zerocopy_proof.py
-├── build/                  # Compiled binaries
-│   ├── quantum_sim_v2.pyd
-│   └── quantum_sim_v3.pyd
-├── docs/                   # Documentation
-│   ├── ARCHITECTURE.md     # System design
-│   ├── BUILD_INSTRUCTIONS.md
-│   ├── RESULTS.md          # Performance analysis
-│   └── images/             # Performance graphs
-├── python/                 # Python utilities
-│   └── gate_fusion.py
-└── src/                    # C++ source code
-    ├── StateVector.h
-    ├── StateVector.cpp
-    ├── StateVectorOptimized.cpp
-    └── bindings_v2.cpp
-
-🔬 Benchmarks
-Run the included benchmarks to verify performance:
-
-# Test zero-copy overhead
-python benchmarks/test_zerocopy_proof.py
-
-# Benchmark gate fusion
-python benchmarks/benchmark_fusion.py
-
-# Thread scaling analysis
-python benchmarks/benchmark_cache.py
-
-# Generate all performance graphs
-python benchmarks/generate_graphs.py
-
-📚 Documentation
-ARCHITECTURE.md - System design and optimization strategies
-
-BUILD_INSTRUCTIONS.md - Detailed compilation guide
-
-RESULTS.md - Complete performance analysis and findings
-
-🎓 Technical Insights
-Why Memory Bandwidth is the Bottleneck
-For a 20-qubit system:
-
-State vector size: 2²⁰ complex numbers = 16 MB
-
-Single gate operation: Read 16 MB + Write 16 MB = 32 MB
-
-Memory bandwidth: ~40 GB/s
-
-Maximum throughput: 40/0.032 ≈ 1250 gates/second
-
-This analysis shows that further optimization requires:
-
-Algorithmic improvements (gate fusion, circuit simplification)
-
-Hardware with higher memory bandwidth (HBM, specialized accelerators)
-
-Alternative simulation methods (tensor network, stabilizer)
-
-🛠️ Future Improvements
- GPU acceleration using CUDA/OpenCL
-
- Tensor network contraction for deeper circuits
-
- Noise modeling for realistic simulation
-
- Circuit optimization passes
-
- Distributed simulation for 30+ qubits
-
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-👤 Author
-Priyansh Bhavsar
-Nuclear Physics Researcher | Quantum Computing Enthusiast
-📧 priyansh.bhavsar.003@gmail.com
-🔗 GitHub • LinkedIn
-
-🙏 Acknowledgments
-pybind11 for seamless Python-C++ integration
-
-OpenMP for parallel programming support
-
-Inspired by production quantum simulators like Qiskit Aer and PennyLane-Lightning
-
-📝 Citation
-If you use this project in your research or work, please cite:
-
-@software{lightning_lite_2026,
-  author = {Priyansh Bhavsar},
-  title = {Lightning-Lite: High-Performance Quantum Circuit Simulator},
-  year = {2026},
-  url = {https://github.com/Athleity/lightning-lite-quantum-simulator}
-}
-
-⭐ Star this repo if you find it useful!
+###💻 Usage
+###Basic Example
