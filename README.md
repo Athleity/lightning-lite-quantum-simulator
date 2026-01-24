@@ -1,4 +1,4 @@
-# ⚡ Lightning-Lite: High-Performance Quantum Circuit Simulator
+#  Lightning-Lite: High-Performance Quantum Circuit Simulator
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![C++17](https://img.shields.io/badge/C++-17-blue.svg)
