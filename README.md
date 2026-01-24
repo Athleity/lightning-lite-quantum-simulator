@@ -107,6 +107,7 @@ g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC \
     bindings_v2.cpp StateVector.cpp StateVectorOptimized.cpp \
     -o ../build/quantum_sim_v2.so
 
+
 ###For detailed build instructions, see BUILD_INSTRUCTIONS.md
 
 ###💻 Usage
