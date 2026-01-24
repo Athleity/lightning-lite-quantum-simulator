@@ -1,174 +1,322 @@
 # Build Instructions for Lightning-Lite
 
-## Prerequisites
-
-- **C++ Compiler:** g++ with C++17 and OpenMP support
-- **Python:** 3.8+ with development headers
-- **Libraries:** pybind11, NumPy, Matplotlib
+Complete guide for building Lightning-Lite quantum simulator on Windows, Linux, and macOS.
 
 ---
 
-## Windows (MSYS2/MinGW)
+## Prerequisites
 
-### Install MSYS2
+### Required
+- **C++ Compiler**: GCC 8+, Clang 7+, or MSVC 2019+ with C++17 support
+- **Python**: 3.8 or higher with development headers
+- **pybind11**: Python-C++ binding library
+- **OpenMP**: For parallelization (usually included with compiler)
 
-Download from https://www.msys2.org/ and install to `C:\msys64`
+### Optional (for benchmarking)
+- **NumPy**: Array operations
+- **Matplotlib**: Visualization
+- **Qiskit + Qiskit-Aer**: Comparison benchmarks
 
-### Install Tools
+---
 
+## Installation
+
+### 1. Install Python Dependencies
+
+```bash
+# Core dependencies
+pip install numpy pybind11
+
+# Optional: For benchmarking
+pip install matplotlib qiskit qiskit-aer
+```
+
+---
+
+## 2. Build Instructions by Platform
+
+### Windows (MSYS2/MinGW) - Recommended
+
+#### Step 1: Install MSYS2
+Download from [https://www.msys2.org/](https://www.msys2.org/) and install to `C:\msys64`
+
+#### Step 2: Install Build Tools
 Open MSYS2 MSYS terminal:
 ```bash
 pacman -Syu
-pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-python mingw-w64-x86_64-python-pip
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-python
 ```
 
-### Install Python Packages
+#### Step 3: Find Your Python Paths
+Open your **Anaconda/Miniconda prompt** (not MSYS2):
 ```bash
-pip install pybind11 numpy matplotlib
+# Find Python executable
+python -c "import sys; print(sys.executable)"
+
+# Find include directory
+python -c "import sysconfig; print(sysconfig.get_paths()['include'])"
+
+# Find pybind11 include
+python -c "import pybind11; print(pybind11.get_include())"
+
+# Check for library
+dir C:\Users\YOUR_USER\miniconda3\envs\py312\libs\python312.lib
 ```
 
-### Compile the Project
-```cmd
-REM Zero-copy version
-C:\msys64\mingw64\bin\g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC src/bindings_v2.cpp -o build/quantum_sim_v2.pyd -I C:\msys64\mingw64\include\python3.12 -I C:\msys64\mingw64\lib\python3.12\site-packages\pybind11\include -L C:\msys64\mingw64\lib -lpython3.12
+#### Step 4: Build
+Replace paths with your actual paths from Step 3:
 
-REM Optimized version
-C:\msys64\mingw64\bin\g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC src/StateVectorOptimized.cpp -o build/quantum_sim_v3.pyd -I C:\msys64\mingw64\include\python3.12 -I C:\msys64\mingw64\lib\python3.12\site-packages\pybind11\include -L C:\msys64\mingw64\lib -lpython3.12
+```cmd
+cd D:\quantum_project
+
+REM Build v2 (zero-copy version)
+C:\msys64\mingw64\bin\g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC ^
+    src/bindings_v2.cpp -o build/quantum_sim_v2.pyd ^
+    -I "C:\Users\YOUR_USER\miniconda3\envs\py312\Include" ^
+    -I "C:\Users\YOUR_USER\miniconda3\envs\py312\Lib\site-packages\pybind11\include" ^
+    -L "C:\Users\YOUR_USER\miniconda3\envs\py312\libs" -lpython312
+
+REM Build v3 (optimized version)
+C:\msys64\mingw64\bin\g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC ^
+    src/StateVectorOptimized.cpp -o build/quantum_sim_v3.pyd ^
+    -I "C:\Users\YOUR_USER\miniconda3\envs\py312\Include" ^
+    -I "C:\Users\YOUR_USER\miniconda3\envs\py312\Lib\site-packages\pybind11\include" ^
+    -L "C:\Users\YOUR_USER\miniconda3\envs\py312\libs" -lpython312
+```
+
+#### Step 5: Verify
+```cmd
+cd build
+python -c "import quantum_sim_v3; print('✓ Success!')"
 ```
 
 ---
 
-## Linux (Ubuntu/Debian)
+### Linux (Ubuntu/Debian)
 
-### Install Dependencies
+#### Step 1: Install Dependencies
 ```bash
 sudo apt update
-sudo apt install g++ cmake python3-dev python3-pip libomp-dev
+sudo apt install g++ python3-dev python3-pip libomp-dev
 pip3 install pybind11 numpy matplotlib
 ```
 
-### Compile
+#### Step 2: Build
 ```bash
-g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC src/bindings_v2.cpp -o build/quantum_sim_v2.so $(python3 -m pybind11 --includes) $(python3-config --ldflags)
+cd quantum_project
 
-g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC src/StateVectorOptimized.cpp -o build/quantum_sim_v3.so $(python3 -m pybind11 --includes) $(python3-config --ldflags)
+# Build v2
+g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC \
+    src/bindings_v2.cpp -o build/quantum_sim_v2.so \
+    $(python3 -m pybind11 --includes) $(python3-config --ldflags)
+
+# Build v3
+g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC \
+    src/StateVectorOptimized.cpp -o build/quantum_sim_v3.so \
+    $(python3 -m pybind11 --includes) $(python3-config --ldflags)
+```
+
+#### Step 3: Verify
+```bash
+cd build
+python3 -c "import quantum_sim_v3; print('✓ Success!')"
 ```
 
 ---
 
-## macOS
+### macOS
 
-### Install Homebrew & Tools
+#### Step 1: Install Homebrew & Tools
 ```bash
+# Install Homebrew (if not installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install GCC with OpenMP support
 brew install gcc cmake python3
 pip3 install pybind11 numpy matplotlib
 ```
 
-### Compile
+#### Step 2: Build
 ```bash
-g++-13 -O3 -Wall -shared -std=c++17 -fopenmp -fPIC src/bindings_v2.cpp -o build/quantum_sim_v2.so $(python3 -m pybind11 --includes) $(python3-config --ldflags)
+cd quantum_project
+
+# Build v2 (use g++-13 or your GCC version)
+g++-13 -O3 -Wall -shared -std=c++17 -fopenmp -fPIC \
+    src/bindings_v2.cpp -o build/quantum_sim_v2.so \
+    $(python3 -m pybind11 --includes) $(python3-config --ldflags)
+
+# Build v3
+g++-13 -O3 -Wall -shared -std=c++17 -fopenmp -fPIC \
+    src/StateVectorOptimized.cpp -o build/quantum_sim_v3.so \
+    $(python3 -m pybind11 --includes) $(python3-config --ldflags)
+```
+
+#### Step 3: Verify
+```bash
+cd build
+python3 -c "import quantum_sim_v3; print('✓ Success!')"
 ```
 
 ---
 
-## Running Benchmarks
+## 3. Verification & Testing
 
-### Set Python Path
-
-**Windows:**
-```cmd
-set PYTHONPATH=%CD%\build;%PYTHONPATH%
-```
-
-**Linux/Mac:**
-```bash
-export PYTHONPATH=$(pwd)/build:$PYTHONPATH
-```
-
-### Run Tests
-```bash
-cd benchmarks
-
-# Zero-copy verification
-python test_zerocopy_proof.py
-
-# Gate fusion benchmark
-python benchmark_fusion.py
-
-# Generate graphs
-python generate_graphs.py
-```
-
----
-
-## Verification
-
-Test that everything works:
+### Quick Test
 ```python
 import sys
 sys.path.insert(0, 'build')
 import numpy as np
-import quantum_sim_v3
+from quantum_sim_v3 import StateVector
 
-# Create 3-qubit state
-state = np.zeros(8, dtype=np.complex128)
+# Create 2-qubit state
+state = np.zeros(4, dtype=np.complex128)
 state[0] = 1.0
+sim = StateVector(state)
 
-# Initialize simulator
-sim = quantum_sim_v3.StateVector(state)
-
-# Apply X gate
-X_gate = [0+0j, 1+0j, 1+0j, 0+0j]
-sim.apply_gate_cache_optimized(0, X_gate)
+# Apply Hadamard
+H = [1/np.sqrt(2), 1/np.sqrt(2), 1/np.sqrt(2), -1/np.sqrt(2)]
+sim.apply_gate_cache_optimized(0, H)
 
 print("✓ Simulator works!")
-print(state)
+print(sim.get_numpy_view())
 ```
 
 **Expected output:**
 ```
 ✓ Simulator works!
-[0.+0.j 1.+0.j 0.+0.j 0.+0.j 0.+0.j 0.+0.j 0.+0.j 0.+0.j]
+[0.707+0.j 0.707+0.j 0.   +0.j 0.   +0.j]
+```
+
+### Run Full Benchmark Suite
+```bash
+cd benchmarks
+
+# Compare vs Qiskit
+python compare_and_graph.py
+
+# Expected: 3.5x faster than Qiskit for 4-10 qubits
 ```
 
 ---
 
-## Troubleshooting
+## 4. Troubleshooting
 
-### Module Not Found
-```
-ModuleNotFoundError: No module named 'quantum_sim_v3'
-```
-
-**Solution:** Add build/ to Python path:
+### Error: "Module Not Found"
+**Solution**: Add build directory to Python path
 ```python
 import sys
 sys.path.insert(0, 'build')
 ```
 
-### Compilation Errors
-
-**"pybind11.h not found"**
+### Error: "pybind11.h not found"
+**Solution**: Install pybind11
 ```bash
 pip install pybind11
 ```
 
-**"Python.h not found"**
-- **Windows:** `pacman -S mingw-w64-x86_64-python`
-- **Linux:** `sudo apt install python3-dev`
-- **Mac:** `brew install python3`
+### Error: "Python.h not found"
+**Solution**: Install Python development headers
+- **Windows**: Already included in conda/miniconda
+- **Linux**: `sudo apt install python3-dev`
+- **macOS**: `brew install python3`
 
-### Runtime Errors
+### Error: "DLL load failed" (Windows)
+**Solution 1**: Run from build directory
+```cmd
+cd build
+python -c "import quantum_sim_v3; print('Success')"
+```
 
-**"DLL load failed" (Windows)**
-
-Add MSYS2 to PATH:
+**Solution 2**: Add MSYS2 to PATH
 ```cmd
 set PATH=C:\msys64\mingw64\bin;%PATH%
+```
+
+### Error: "Import hangs" (Windows)
+**Cause**: Python version mismatch between compiler and runtime
+
+**Solution**: Rebuild with YOUR Python paths (see Step 3 above)
+
+### Error: "Access Violation / Segfault"
+**Cause**: Module name mismatch between .cpp and .pyd filename
+
+**Check**: 
+- `bindings_v2.cpp` has `PYBIND11_MODULE(quantum_sim_v2, m)`
+- `StateVectorOptimized.cpp` has `PYBIND11_MODULE(quantum_sim_v3, m)`
+- Filenames match: `quantum_sim_v2.pyd` and `quantum_sim_v3.pyd`
+
+---
+
+## 5. Build Optimization Flags
+
+### Debug Build
+```bash
+g++ -O0 -g -Wall -shared -std=c++17 -fopenmp -fPIC ...
+```
+
+### Release Build (Default)
+```bash
+g++ -O3 -Wall -shared -std=c++17 -fopenmp -fPIC ...
+```
+
+### Maximum Optimization
+```bash
+g++ -O3 -march=native -mtune=native -Wall -shared -std=c++17 -fopenmp -fPIC ...
+```
+
+**Warning**: `-march=native` makes binary non-portable
+
+---
+
+## 6. CMake Build (Alternative)
+
+### Create CMakeLists.txt
+```cmake
+cmake_minimum_required(VERSION 3.15)
+project(lightning_lite)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp")
+
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 REQUIRED)
+
+pybind11_add_module(quantum_sim_v3 src/StateVectorOptimized.cpp)
+```
+
+### Build
+```bash
+mkdir build && cd build
+cmake ..
+make
+```
+
+---
+
+## 7. Performance Tuning
+
+### OpenMP Thread Count
+```bash
+# Set number of threads
+export OMP_NUM_THREADS=8
+
+# Run benchmark
+python benchmarks/compare_and_graph.py
+```
+
+### CPU Affinity (Linux)
+```bash
+# Pin to physical cores
+taskset -c 0-7 python benchmarks/compare_and_graph.py
 ```
 
 ---
 
 ## Contact
 
-For issues or questions, open an issue on GitHub.
+For build issues, open an issue on GitHub or contact:
+📧 priyansh.bhavsar.003@gmail.com
+
+---
+
+*Last updated: January 24, 2026*
