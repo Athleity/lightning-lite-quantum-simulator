@@ -110,6 +110,7 @@ For detailed build instructions, see BUILD_INSTRUCTIONS.md.
 
 💻 Usage
 Basic Example
+
 import sys
 sys.path.append('build')
 import quantum_sim_v2 as qs
@@ -144,7 +145,7 @@ for gate_type, *params in gates:
     if gate_type == 'h':
         state.hadamard(params)
     elif gate_type == 'rz':
-        state.rz(params, params)[1]
+        state.rz(params, params[1])
     # ... other gates
 
 📁 Project Structure
