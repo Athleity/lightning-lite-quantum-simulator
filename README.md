@@ -334,15 +334,18 @@ Nuclear Physics Researcher | Quantum Computing Enthusiast
 
 If you use this project in your research or work, please cite:
 
-```bibtex
-@software{lightning_lite_2026,
-  author = {Priyansh Bhavsar},
-  title = {Lightning-Lite: Ultra-Fast Quantum Circuit Simulator},
-  year = {2026},
-  version = {1.0.0},
-  url = {https://github.com/Athleity/lightning-lite-quantum-simulator},
-  note = {3.5x faster than Qiskit, 30x internal speedup}
-}
+## 📖 Citation
+
+```yaml
+name: Lightning-Lite
+author: Priyansh Bhavsar
+year: 2026
+version: v1.0.0
+description: Ultra-Fast Quantum Circuit Simulator
+github: https://github.com/Athleity/lightning-lite-quantum-simulator
+performance: 
+  - 3.5x faster than Qiskit
+  - 30x internal speedup
 ```
 
 ---
