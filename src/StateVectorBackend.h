@@ -3,23 +3,29 @@
 // Same conventions as Backend.h: qubit q is bit q of the basis-state index, RX/RY/RZ(t) =
 // exp(-i t P/2), mcz negates every amplitude whose bits are all 1 on the listed qubits.
 //
-// Every gate walks the state in blocks. A gate on qubit q pairs index i (bit q = 0) with
-// i + 2^q, so the state splits into N / 2^(q+1) blocks of 2^(q+1) amplitudes whose lower and
-// upper halves are contiguous runs of 2^q. The outer block loop is parallel; when q is so high
-// that fewer than 32 blocks remain, the inner run is parallel instead. CNOT uses the same
-// scheme over (outer, middle) groups of contiguous runs of 2^min(control, target).
-// States below 2^14 amplitudes run serially, where thread start-up costs more than the gate.
-// No 2^n x 2^n matrix is ever built.
+// Every gate is one OpenMP parallel region. A gate on qubit q pairs index i (bit q = 0) with
+// i + 2^q, giving N/2 independent pairs. Pair p sits at
+//   i0 = ((p >> q) << (q + 1)) | (p & (2^q - 1)),   partner i1 = i0 + 2^q.
+// Each thread takes a contiguous range of pair indices and walks it in runs of contiguous pairs
+// (a run ends where p >> q changes), so the inner loop is unit stride for every q and the work
+// splits evenly even when q is large and only a few blocks exist. CNOT uses the same scheme over
+// N/4 pairs, with runs of 2^min(control, target).
+// States below PAR_MIN = 2^15 amplitudes run in a single thread, where thread start-up costs more
+// than the gate. No 2^n x 2^n matrix is ever built.
 //
 // Complex products are written out in real arithmetic, because std::complex operator* calls the
 // NaN-checking __muldc3 without -ffast-math.
 //
-// Build (used directly, or via #include "StateVectorBackend.cpp" from a test; all members are
-// defined in the class body, so including it in several translation units is ODR-safe):
+// Build (all members are defined in the class body, so including it in several translation
+// units is ODR-safe):
 //   g++ -O3 -march=native -fopenmp -std=c++17 -Isrc ...
 
-#ifndef LL_STATEVECTOR_BACKEND_CPP
-#define LL_STATEVECTOR_BACKEND_CPP
+#ifndef LL_STATEVECTOR_BACKEND_H
+#define LL_STATEVECTOR_BACKEND_H
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <algorithm>
 #include <cmath>
@@ -98,8 +104,8 @@ public:
     }
 
     // Swap the control = 1 amplitudes between target = 0 and target = 1. With lo = min and
-    // hi = max of the two qubits, a group g selects the high bits (above hi) and middle bits
-    // (between lo and hi); the 2^lo low bits form the contiguous run.
+    // hi = max of the two qubits, group g = p >> lo selects the bits between lo and hi (low
+    // mid_bits of g) and above hi (the rest); the 2^lo low bits form the contiguous run.
     void cnot(int control, int target) override {
         check_qubit(control);
         check_qubit(target);
@@ -108,27 +114,22 @@ public:
         const int lo = std::min(control, target), hi = std::max(control, target);
         const int mid_bits = hi - lo - 1;
         const ll n_mid = 1LL << mid_bits;
-        const ll groups = (size_ >> (hi + 1)) * n_mid;
-        const ll run = 1LL << lo;
+        const ll n_pairs = size_ >> 2;
         const ll cbit = 1LL << control, tbit = 1LL << target;
         Complex* psi = psi_.data();
         const bool par = size_ >= PAR_MIN;
-
-        auto base_of = [=](ll g) { return ((g >> mid_bits) << (hi + 1)) | ((g & (n_mid - 1)) << (lo + 1)); };
-
-        if (groups >= 32) {
-#pragma omp parallel for schedule(static) if (par)
-            for (ll g = 0; g < groups; ++g) {
-                Complex* p0 = psi + (base_of(g) | cbit);
+#pragma omp parallel if (par)
+        {
+            ll p, end;
+            thread_range(n_pairs, p, end);
+            while (p < end) {
+                const ll g = p >> lo;
+                const ll run_end = std::min(end, (g + 1) << lo);
+                const ll base = ((g >> mid_bits) << (hi + 1)) | ((g & (n_mid - 1)) << (lo + 1));
+                Complex* p0 = psi + (base | cbit | (p & ((1LL << lo) - 1)));
                 Complex* p1 = p0 + tbit;
-                for (ll j = 0; j < run; ++j) std::swap(p0[j], p1[j]);
-            }
-        } else {
-            for (ll g = 0; g < groups; ++g) {
-                Complex* p0 = psi + (base_of(g) | cbit);
-                Complex* p1 = p0 + tbit;
-#pragma omp parallel for schedule(static) if (par)
-                for (ll j = 0; j < run; ++j) std::swap(p0[j], p1[j]);
+                for (ll j = 0, len = run_end - p; j < len; ++j) std::swap(p0[j], p1[j]);
+                p = run_end;
             }
         }
     }
@@ -165,7 +166,8 @@ private:
     using Complex = std::complex<double>;
     using ll = long long;
 
-    static constexpr ll PAR_MIN = 1LL << 14;
+    // Measured, not derived: below this a single thread beats the cost of a parallel region.
+    static constexpr ll PAR_MIN = 1LL << 15;
 
     int n_ = 0;
     ll size_ = 0;
@@ -182,28 +184,35 @@ private:
             throw std::invalid_argument(std::string("StateVectorBackend::") + who + ": non-finite angle");
     }
 
+    // Contiguous share [lo, hi) of n work items for the calling thread; call inside a parallel region.
+    static void thread_range(ll n, ll& lo, ll& hi) {
+#ifdef _OPENMP
+        const ll t = omp_get_thread_num(), nt = omp_get_num_threads();
+#else
+        const ll t = 0, nt = 1;
+#endif
+        lo = n * t / nt;
+        hi = n * (t + 1) / nt;
+    }
+
     // kernel(a0, a1) acts on every amplitude pair (bit q = 0, bit q = 1).
     template <class K>
     void for_pairs(int q, K kernel) {
         check_qubit(q);
         const ll stride = 1LL << q;
-        const ll n_blocks = size_ >> (q + 1);
+        const ll n_pairs = size_ >> 1;
         Complex* psi = psi_.data();
         const bool par = size_ >= PAR_MIN;
-
-        if (n_blocks >= 32) {
-#pragma omp parallel for schedule(static) if (par)
-            for (ll b = 0; b < n_blocks; ++b) {
-                Complex* p0 = psi + b * 2 * stride;
+#pragma omp parallel if (par)
+        {
+            ll p, end;
+            thread_range(n_pairs, p, end);
+            while (p < end) {
+                const ll run_end = std::min(end, ((p >> q) + 1) << q);
+                Complex* p0 = psi + (((p >> q) << (q + 1)) | (p & (stride - 1)));
                 Complex* p1 = p0 + stride;
-                for (ll j = 0; j < stride; ++j) kernel(p0[j], p1[j]);
-            }
-        } else {
-            for (ll b = 0; b < n_blocks; ++b) {
-                Complex* p0 = psi + b * 2 * stride;
-                Complex* p1 = p0 + stride;
-#pragma omp parallel for schedule(static) if (par)
-                for (ll j = 0; j < stride; ++j) kernel(p0[j], p1[j]);
+                for (ll j = 0, len = run_end - p; j < len; ++j) kernel(p0[j], p1[j]);
+                p = run_end;
             }
         }
     }
@@ -211,4 +220,4 @@ private:
 
 }  // namespace ll
 
-#endif  // LL_STATEVECTOR_BACKEND_CPP
+#endif  // LL_STATEVECTOR_BACKEND_H
