@@ -1,0 +1,81 @@
+{
+  "n_values": [
+    10,
+    12,
+    14,
+    16
+  ],
+  "grover_iterations": 10,
+  "repeats": 5,
+  "qiskit_version": "2.5.2",
+  "qiskit_aer_version": "0.17.2",
+  "cpu_count": 2,
+  "omp_num_threads": null,
+  "v1_claim_speedup_vs_aer": 3.5,
+  "rows": [
+    {
+      "n": 10,
+      "marked": 341,
+      "qiskit_ms": 9.62095600016255,
+      "eigen_ms": 0.4886289998466964,
+      "statevector_ms": 0.7194119998530368,
+      "sv_vs_qiskit": 13.373360469561172,
+      "sv_vs_eigen": 0.6792060737748532,
+      "eigen_vs_qiskit": 19.689695051216876,
+      "peak_qiskit": 0.3723864330968956,
+      "peak_eigen": 0.37238643309688396,
+      "peak_statevector": 0.37238643309688396,
+      "peak_theory": 0.37238643309689723,
+      "circuit_gates": 570,
+      "transpiled_gates": 570
+    },
+    {
+      "n": 12,
+      "marked": 1365,
+      "qiskit_ms": 15.024052999706328,
+      "eigen_ms": 2.018645000134711,
+      "statevector_ms": 1.6779190000306698,
+      "sv_vs_qiskit": 8.95397989976376,
+      "sv_vs_eigen": 1.2030646295189538,
+      "eigen_vs_qiskit": 7.442642464972158,
+      "peak_qiskit": 0.10386521758019962,
+      "peak_eigen": 0.10386521758019565,
+      "peak_statevector": 0.10386521758019572,
+      "peak_theory": 0.10386521758020009,
+      "circuit_gates": 672,
+      "transpiled_gates": 672
+    },
+    {
+      "n": 14,
+      "marked": 5461,
+      "qiskit_ms": 36.339291999865964,
+      "eigen_ms": 9.284819000185962,
+      "statevector_ms": 6.085781999900064,
+      "sv_vs_qiskit": 5.97117872451933,
+      "sv_vs_eigen": 1.5256575079978925,
+      "eigen_vs_qiskit": 3.913839569639229,
+      "peak_qiskit": 0.026676407418185614,
+      "peak_eigen": 0.026676407418184427,
+      "peak_statevector": 0.026676407418184417,
+      "peak_theory": 0.02667640741818577,
+      "circuit_gates": 774,
+      "transpiled_gates": 774
+    },
+    {
+      "n": 16,
+      "marked": 21845,
+      "qiskit_ms": 98.21399199972802,
+      "eigen_ms": 43.55742500001725,
+      "statevector_ms": 26.70171499994467,
+      "sv_vs_qiskit": 3.6781904083663366,
+      "sv_vs_eigen": 1.6312594528144542,
+      "eigen_vs_qiskit": 2.2548163028390484,
+      "peak_qiskit": 0.006714079873298041,
+      "peak_eigen": 0.006714079873297661,
+      "peak_statevector": 0.006714079873297672,
+      "peak_theory": 0.00671407987329805,
+      "circuit_gates": 876,
+      "transpiled_gates": 876
+    }
+  ]
+}
