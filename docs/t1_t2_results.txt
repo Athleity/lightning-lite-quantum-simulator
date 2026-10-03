@@ -1,0 +1,64 @@
+
+Parameters
+----------
+  T1 = 100 us, T2 = 80 us, Tphi = 133.3333 us
+  g/2pi = 100 MHz, delta/2pi = 1 GHz, kappa/2pi = 10 MHz, g/delta = 0.1
+  gamma_P = 6.283185e+05 1/s  (Purcell limit 1.5915 us)
+  T1_eff = 1.5666 us, T2_eff = 3.0613 us
+
+Intrinsic decay: simulation vs analytic
+---------------------------------------
+  t [us]            P1 sim          P1 exact      |err|             C sim           C exact      |err|
+       0    1.000000000000    1.000000000000   0.00e+00    1.000000000000    1.000000000000   0.00e+00
+      25    0.778800783071    0.778800783071   1.11e-16    0.731615628947    0.731615628947   1.11e-16
+      50    0.606530659713    0.606530659713   1.11e-16    0.535261428519    0.535261428519   0.00e+00
+     100    0.367879441171    0.367879441171   5.55e-17    0.286504796860    0.286504796860   0.00e+00
+     200    0.135335283237    0.135335283237   2.78e-17    0.082084998624    0.082084998624   0.00e+00
+
+Purcell rate vs filter attenuation (g/delta = 0.1)
+--------------------------------------------------
+   dB          s   gamma_P sim [1/s]  gamma_P exact [1/s]    rel err   T1 limit [us]   T1_eff [us]
+    0    1.00000        6.283185e+05         6.283185e+05   3.71e-16          1.5915        1.5666
+   10    0.10000        6.283185e+04         6.283185e+04   1.16e-16         15.9155       13.7303
+   20    0.01000        6.283185e+03         6.283185e+03   4.34e-16        159.1549       61.4130
+   30    0.00100        6.283185e+02         6.283185e+02   3.62e-16       1591.5494       94.0883
+   40    0.00010        6.283185e+01         6.283185e+01   1.13e-16      15915.4943       99.3756
+
+Combined T1/T2 vs g/delta (no filter)
+-------------------------------------
+ g/delta  gamma_P [1/s]   T1_eff sim      exact   T2_eff sim      exact  T2/(2 T1_eff)  Tphi_eff/Tphi
+    0.02     2.5133e+04     28.46348   28.46348     39.89409   39.89409       0.700794    1.000000000
+    0.05     1.5708e+05      5.98517    5.98517     10.98420   10.98420       0.917618    1.000000000
+    0.10     6.2832e+05      1.56662    1.56662      3.06129    3.06129       0.977040    1.000000000
+    0.20     2.5133e+06      0.39631    0.39631      0.78794    0.78794       0.994090    1.000000000
+    0.40     1.0053e+07      0.09937    0.09937      0.19845    0.19845       0.998512    1.000000000
+  (times in us)
+
+End-to-end: DensityMatrixSimulator with NoiseModel + Purcell
+------------------------------------------------------------
+   dB  t final [us]          P1 sim        P1 exact           C sim         C exact   max |err|
+    0        3.1332  0.135335283237  0.135335283237  0.359335337244  0.359335337244    2.22e-16
+   20      122.8261  0.135335283237  0.135335283237  0.146431771529  0.146431771529    2.22e-16
+
+Summary of checks
+-----------------
+check                                                  max error   tolerance  status
+T1 decay: P1(t) vs exp(-t/T1)                           3.33e-16       1e-12  PASS
+T2 coherence: |rho01| vs exp(-t/T2)                     1.11e-16       1e-12  PASS
+Filter factor s = 10^(-dB/10), 0 to 40 dB               0.00e+00       1e-12  PASS
+Purcell T1 limit vs filter attenuation                  5.67e-16       1e-12  PASS
+Combined T1_eff vs filter attenuation                   4.26e-16       1e-12  PASS
+Purcell rate vs detuning (0 and 20 dB)                  5.98e-16       1e-12  PASS
+Rate scaling exponent in delta (expect -2)              2.22e-15       1e-09  PASS
+Combined T1_eff vs g/delta (4 filters)                  5.35e-16       1e-12  PASS
+Combined T2_eff vs g/delta (4 filters)                  5.44e-16       1e-09  PASS
+Intrinsic Tphi preserved by combined_with               6.22e-14       1e-09  PASS
+T2_eff <= 2 T1_eff                                      0.00e+00       1e-09  PASS
+Simulator idle decay vs T1_eff, T2_eff                  2.22e-16       1e-11  PASS
+Kraus trace preservation (T1/T2, Purcell)               0.00e+00       0e+00  PASS
+
+ALL CHECKS PASSED
+
+saved docs/images/t1_t2_decay.png
+saved docs/images/purcell_filter_detuning.png
+saved docs/images/combined_t1_t2_eff.png
