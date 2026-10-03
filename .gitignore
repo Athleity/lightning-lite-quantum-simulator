@@ -22,3 +22,11 @@ Thumbs.db
 # Temporary
 *.log
 *.tmp
+# Build artifacts
+build/
+*.o
+*.so
+*.pyd
+*.so.*
+__pycache__/
+*.pyc
