@@ -1,0 +1,235 @@
+{
+  "n_values": [
+    10,
+    12,
+    14,
+    16,
+    18
+  ],
+  "grover_iterations": 10,
+  "repeats": 3,
+  "timeout_s": 900,
+  "cpu_count": 2,
+  "omp_num_threads": null,
+  "psutil_available": true,
+  "versions": {
+    "ours": null,
+    "aer": "0.17.2",
+    "cirq": "1.7.0",
+    "pennylane": "0.45.1"
+  },
+  "libraries_skipped": [
+    "qulacs"
+  ],
+  "reference_claims": [
+    {
+      "claim": "CAST reports an 8.03x speedup over Qiskit on a 32-qubit CPU",
+      "source": "project brief (citation marker 9), not verified"
+    },
+    {
+      "claim": "Qiskit Aer fails at 30 qubits",
+      "source": "project brief (citation marker 3), not verified"
+    }
+  ],
+  "rows": {
+    "ours": [
+      {
+        "n": 10,
+        "status": "ok",
+        "time_ms": 0.7032120010990184,
+        "p_success": 0.37238643309688396,
+        "p_total": 0.9999999999999637,
+        "argmax": 341,
+        "size": 1024,
+        "peak_rss_mb": 34.1328125,
+        "delta_mb": 0.296875
+      },
+      {
+        "n": 12,
+        "status": "ok",
+        "time_ms": 2.2614899990003323,
+        "p_success": 0.10386521758019572,
+        "p_total": 0.9999999999999585,
+        "argmax": 1365,
+        "size": 4096,
+        "peak_rss_mb": 34.23828125,
+        "delta_mb": 0.2578125
+      },
+      {
+        "n": 14,
+        "status": "ok",
+        "time_ms": 7.5781710002047475,
+        "p_success": 0.026676407418184417,
+        "p_total": 0.9999999999999515,
+        "argmax": 5461,
+        "size": 16384,
+        "peak_rss_mb": 34.6953125,
+        "delta_mb": 0.734375
+      },
+      {
+        "n": 16,
+        "status": "ok",
+        "time_ms": 30.75550299945462,
+        "p_success": 0.006714079873297672,
+        "p_total": 0.9999999999999449,
+        "argmax": 21845,
+        "size": 65536,
+        "peak_rss_mb": 36.52734375,
+        "delta_mb": 2.046875
+      },
+      {
+        "n": 18,
+        "status": "ok",
+        "time_ms": 133.31537200065213,
+        "p_success": 0.0016813404854431318,
+        "p_total": 0.9999999999999375,
+        "argmax": 87381,
+        "size": 262144,
+        "peak_rss_mb": 44.03515625,
+        "delta_mb": 6.125
+      }
+    ],
+    "aer": [
+      {
+        "n": 10,
+        "status": "ok",
+        "time_ms": 9.993829999075388,
+        "p_success": 0.3723864330968956,
+        "p_total": 0.9999999999999958,
+        "argmax": 341,
+        "size": 1024,
+        "peak_rss_mb": 96.953125,
+        "delta_mb": 0.81640625
+      },
+      {
+        "n": 12,
+        "status": "ok",
+        "time_ms": 15.89031299954513,
+        "p_success": 0.10386521758019962,
+        "p_total": 0.9999999999999954,
+        "argmax": 1365,
+        "size": 4096,
+        "peak_rss_mb": 97.1953125,
+        "delta_mb": 1.2109375
+      },
+      {
+        "n": 14,
+        "status": "ok",
+        "time_ms": 37.98319099951186,
+        "p_success": 0.026676407418185614,
+        "p_total": 0.9999999999999948,
+        "argmax": 5461,
+        "size": 16384,
+        "peak_rss_mb": 97.60546875,
+        "delta_mb": 1.46484375
+      },
+      {
+        "n": 16,
+        "status": "ok",
+        "time_ms": 100.45218699997349,
+        "p_success": 0.006714079873298041,
+        "p_total": 0.9999999999999984,
+        "argmax": 21845,
+        "size": 65536,
+        "peak_rss_mb": 99.1953125,
+        "delta_mb": 3.05859375
+      },
+      {
+        "n": 18,
+        "status": "ok",
+        "time_ms": 385.6314819986437,
+        "p_success": 0.0016813404854432387,
+        "p_total": 0.9999999999999991,
+        "argmax": 87381,
+        "size": 262144,
+        "peak_rss_mb": 109.484375,
+        "delta_mb": 13.28515625
+      }
+    ],
+    "cirq": [
+      {
+        "n": 10,
+        "status": "ok",
+        "time_ms": 38.897898000868736,
+        "p_success": 0.37238643309689695,
+        "p_total": 0.9999999999999989,
+        "argmax": 341,
+        "size": 1024,
+        "peak_rss_mb": 201.3359375,
+        "delta_mb": 0.23828125
+      },
+      {
+        "n": 12,
+        "status": "ok",
+        "time_ms": 54.3327909999789,
+        "p_success": 0.10386521758020045,
+        "p_total": 1.000000000000005,
+        "argmax": 1365,
+        "size": 4096,
+        "peak_rss_mb": 201.171875,
+        "delta_mb": 0.7265625
+      },
+      {
+        "n": 14,
+        "status": "ok",
+        "time_ms": 156.38569200018537,
+        "p_success": 0.026676407418186332,
+        "p_total": 1.000000000000023,
+        "argmax": 5461,
+        "size": 16384,
+        "peak_rss_mb": 202.31640625,
+        "delta_mb": 1.80078125
+      },
+      {
+        "n": 16,
+        "status": "ok",
+        "time_ms": 307.4700130000565,
+        "p_success": 0.006714079873298343,
+        "p_total": 1.0000000000000464,
+        "argmax": 21845,
+        "size": 65536,
+        "peak_rss_mb": 206.89453125,
+        "delta_mb": 6.078125
+      },
+      {
+        "n": 18,
+        "status": "ok",
+        "time_ms": 620.759765000912,
+        "p_success": 0.0016813404854433235,
+        "p_total": 1.0000000000000533,
+        "argmax": 87381,
+        "size": 262144,
+        "peak_rss_mb": 226.6640625,
+        "delta_mb": 26.01953125
+      }
+    ],
+    "pennylane": [
+      {
+        "n": 10,
+        "status": "ok",
+        "time_ms": 251.80941500002518,
+        "p_success": 0.3723864330968838,
+        "p_total": 0.9999999999999637,
+        "argmax": 341,
+        "size": 1024,
+        "peak_rss_mb": 309.45703125,
+        "delta_mb": 36.62109375
+      },
+      {
+        "n": 12,
+        "status": "ok",
+        "time_ms": 5044.583421000425,
+        "p_success": 0.10386521758019561,
+        "p_total": 0.9999999999999575,
+        "argmax": 1365,
+        "size": 4096,
+        "peak_rss_mb": 785.4765625,
+        "delta_mb": 511.72265625
+      },
+      {
+        "n": 14,
+        "status": "error: exit -15"
+      }
+    ]
+  }
+}
