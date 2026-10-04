@@ -1,0 +1,388 @@
+{
+  "eps": 0.005,
+  "cpu_count": 2,
+  "omp_num_threads": null,
+  "quick": false,
+  "dephasing": {
+    "gamma": 1.0,
+    "n_pilot": 10000,
+    "rows": [
+      {
+        "gamma_t": 0.1,
+        "n_required": {
+          "STANDARD": 12974,
+          "PROJECTOR": 5290,
+          "ANALOG": 1320
+        },
+        "variance": {
+          "STANDARD": 0.3243484348435186,
+          "PROJECTOR": 0.1322276636110846,
+          "ANALOG": 0.03298601711108392
+        },
+        "factor": {
+          "STANDARD": 1.0,
+          "PROJECTOR": 2.452954442252798,
+          "ANALOG": 9.832906887522697
+        },
+        "analytic_ratio": 2.4918246976412703,
+        "analytic_var_standard": 0.3296799539643607,
+        "analytic_var_projector": 0.1323046337394567
+      },
+      {
+        "gamma_t": 0.25,
+        "n_required": {
+          "STANDARD": 25002,
+          "PROJECTOR": 6760,
+          "ANALOG": 3281
+        },
+        "variance": {
+          "STANDARD": 0.6250287428744278,
+          "PROJECTOR": 0.16898027815719538,
+          "ANALOG": 0.08201493187579409
+        },
+        "factor": {
+          "STANDARD": 1.0,
+          "PROJECTOR": 3.698826571305495,
+          "ANALOG": 7.620914004061972
+        },
+        "analytic_ratio": 3.718281828459045,
+        "analytic_var_standard": 0.6321205588285577,
+        "analytic_var_projector": 0.17000340156854793
+      },
+      {
+        "gamma_t": 0.5,
+        "n_required": {
+          "STANDARD": 34463,
+          "PROJECTOR": 4122,
+          "ANALOG": 3868
+        },
+        "variance": {
+          "STANDARD": 0.8615533153314207,
+          "PROJECTOR": 0.10303326412548185,
+          "ANALOG": 0.09668103672330564
+        },
+        "factor": {
+          "STANDARD": 1.0,
+          "PROJECTOR": 8.361894798190171,
+          "ANALOG": 8.911295787995385
+        },
+        "analytic_ratio": 8.38905609893065,
+        "analytic_var_standard": 0.8646647167633873,
+        "analytic_var_projector": 0.10307056080762242
+      },
+      {
+        "gamma_t": 0.75,
+        "n_required": {
+          "STANDARD": 38033,
+          "PROJECTOR": 1804,
+          "ANALOG": 2976
+        },
+        "variance": {
+          "STANDARD": 0.9508110811081707,
+          "PROJECTOR": 0.04509685892734933,
+          "ANALOG": 0.07438360244041708
+        },
+        "factor": {
+          "STANDARD": 1.0,
+          "PROJECTOR": 21.083754029075937,
+          "ANALOG": 12.782536068615277
+        },
+        "analytic_ratio": 21.085536923187668,
+        "analytic_var_standard": 0.950212931632136,
+        "analytic_var_projector": 0.045064677987269625
+      },
+      {
+        "gamma_t": 1.0,
+        "n_required": {
+          "STANDARD": 39385,
+          "PROJECTOR": 707,
+          "ANALOG": 2079
+        },
+        "variance": {
+          "STANDARD": 0.9846231023102188,
+          "PROJECTOR": 0.017663342134309642,
+          "ANALOG": 0.051972041611084624
+        },
+        "factor": {
+          "STANDARD": 1.0,
+          "PROJECTOR": 55.743873091699136,
+          "ANALOG": 18.945245785769128
+        },
+        "analytic_ratio": 55.598150033144236,
+        "analytic_var_standard": 0.9816843611112658,
+        "analytic_var_projector": 0.017656781035448932
+      },
+      {
+        "gamma_t": 1.5,
+        "n_required": {
+          "STANDARD": 39938,
+          "PROJECTOR": 99,
+          "ANALOG": 829
+        },
+        "variance": {
+          "STANDARD": 0.998435203520496,
+          "PROJECTOR": 0.0024667392916863052,
+          "ANALOG": 0.020701359880394624
+        },
+        "factor": {
+          "STANDARD": 1.0,
+          "PROJECTOR": 404.75911130354945,
+          "ANALOG": 48.23041622816631
+        },
+        "analytic_ratio": 404.4287934927351,
+        "analytic_var_standard": 0.9975212478233336,
+        "analytic_var_projector": 0.0024664941366031906
+      }
+    ]
+  },
+  "amplitude_damping": {
+    "gamma": 1.0,
+    "n_pilot": 10000,
+    "rows": [
+      {
+        "gamma_t": 0.25,
+        "variance": {
+          "STANDARD": 0.1736756775677212,
+          "PROJECTOR": 0.1736756775677212,
+          "ANALOG": 0.03930932125658277
+        },
+        "n_required": {
+          "STANDARD": 6948,
+          "PROJECTOR": 6948,
+          "ANALOG": 1573
+        },
+        "factor_analog": 4.418180523497015
+      },
+      {
+        "gamma_t": 0.5,
+        "variance": {
+          "STANDARD": 0.23941494149415643,
+          "PROJECTOR": 0.23941494149415643,
+          "ANALOG": 0.07017054432568073
+        },
+        "n_required": {
+          "STANDARD": 9577,
+          "PROJECTOR": 9577,
+          "ANALOG": 2807
+        },
+        "factor_analog": 3.4119008737194063
+      },
+      {
+        "gamma_t": 1.0,
+        "variance": {
+          "STANDARD": 0.23217425742572273,
+          "PROJECTOR": 0.23217425742572273,
+          "ANALOG": 0.07500300026857003
+        },
+        "n_required": {
+          "STANDARD": 9287,
+          "PROJECTOR": 9287,
+          "ANALOG": 3001
+        },
+        "factor_analog": 3.095532933274074
+      },
+      {
+        "gamma_t": 2.0,
+        "variance": {
+          "STANDARD": 0.11620198019799508,
+          "PROJECTOR": 0.11620198019799508,
+          "ANALOG": 0.031980351398329124
+        },
+        "n_required": {
+          "STANDARD": 4649,
+          "PROJECTOR": 4649,
+          "ANALOG": 1280
+        },
+        "factor_analog": 3.633542944874154
+      }
+    ]
+  },
+  "chain": {
+    "duration": 1.5,
+    "t1": 3.0,
+    "tphi": 2.0,
+    "j": 0.5,
+    "h": 0.4,
+    "n_pilot": 1000,
+    "jump_steps": 200,
+    "analog_steps": 400,
+    "exact_steps": 400,
+    "rows": [
+      {
+        "n": 1,
+        "dim": 2,
+        "exact": 0.30362400479172935,
+        "t_exact_s": 0.24556807799990565,
+        "kinds": {
+          "STANDARD": {
+            "mean": 0.3288817426960006,
+            "std_error": 0.020254987919729437,
+            "variance": 0.41026453562838544,
+            "ms_per_trajectory": 0.006352547999995295,
+            "n_required": 16411,
+            "time_to_eps_s": 0.10425166522792279,
+            "z": 1.2469885444695274
+          },
+          "PROJECTOR": {
+            "mean": 0.313964153927699,
+            "std_error": 0.008332077436043937,
+            "variance": 0.0694235144002325,
+            "ms_per_trajectory": 0.006288027000209695,
+            "n_required": 2777,
+            "time_to_eps_s": 0.017461850979582322,
+            "z": 1.2410049252829722
+          },
+          "ANALOG": {
+            "mean": 0.2672727752381853,
+            "std_error": 0.013660434339769073,
+            "variance": 0.18660746635114212,
+            "ms_per_trajectory": 0.06083071100010784,
+            "n_required": 7465,
+            "time_to_eps_s": 0.45410125761580505,
+            "z": -2.661059571708943
+          }
+        }
+      },
+      {
+        "n": 2,
+        "dim": 4,
+        "exact": 0.33433317056152445,
+        "t_exact_s": 0.08948477099966112,
+        "kinds": {
+          "STANDARD": {
+            "mean": 0.33554008169609917,
+            "std_error": 0.01529319033119861,
+            "variance": 0.23388167050626665,
+            "ms_per_trajectory": 0.011305961000289244,
+            "n_required": 9356,
+            "time_to_eps_s": 0.10577857111870617,
+            "z": 0.07891820532126506
+          },
+          "PROJECTOR": {
+            "mean": 0.3456982674824949,
+            "std_error": 0.007894930452474452,
+            "variance": 0.062329926849408454,
+            "ms_per_trajectory": 0.008852045999901748,
+            "n_required": 2494,
+            "time_to_eps_s": 0.02207700272375496,
+            "z": 1.4395436399833452
+          },
+          "ANALOG": {
+            "mean": 0.333467418213208,
+            "std_error": 0.009413223432055768,
+            "variance": 0.08860877538180377,
+            "ms_per_trajectory": 0.1695285949999743,
+            "n_required": 3545,
+            "time_to_eps_s": 0.600978869274909,
+            "z": -0.09197193231047696
+          }
+        }
+      },
+      {
+        "n": 3,
+        "dim": 8,
+        "exact": 0.34299932555168205,
+        "t_exact_s": 0.12756920800029548,
+        "kinds": {
+          "STANDARD": {
+            "mean": 0.34635747844013876,
+            "std_error": 0.012730466915118798,
+            "variance": 0.16206478787693432,
+            "ms_per_trajectory": 0.018562688000201888,
+            "n_required": 6483,
+            "time_to_eps_s": 0.12034190630530885,
+            "z": 0.2637886662639634
+          },
+          "PROJECTOR": {
+            "mean": 0.3343510503216312,
+            "std_error": 0.006723035055714037,
+            "variance": 0.04519920036035985,
+            "ms_per_trajectory": 0.0187294990000737,
+            "n_required": 1808,
+            "time_to_eps_s": 0.03386293419213325,
+            "z": -1.2863647383037984
+          },
+          "ANALOG": {
+            "mean": 0.330569348138718,
+            "std_error": 0.007683338315438903,
+            "variance": 0.05903368766949152,
+            "ms_per_trajectory": 0.45673192300000665,
+            "n_required": 2362,
+            "time_to_eps_s": 1.0788008021260158,
+            "z": -1.6177834298910452
+          }
+        }
+      },
+      {
+        "n": 4,
+        "dim": 16,
+        "exact": 0.3473392738650707,
+        "t_exact_s": 0.2671725569998671,
+        "kinds": {
+          "STANDARD": {
+            "mean": 0.3542915369339374,
+            "std_error": 0.011025786608017323,
+            "variance": 0.12156797032553415,
+            "ms_per_trajectory": 0.05594736800003375,
+            "n_required": 4863,
+            "time_to_eps_s": 0.2720720505841641,
+            "z": 0.630545766577
+          },
+          "PROJECTOR": {
+            "mean": 0.344308997069138,
+            "std_error": 0.0058131806493091276,
+            "variance": 0.03379306926150209,
+            "ms_per_trajectory": 0.05729835199963418,
+            "n_required": 1352,
+            "time_to_eps_s": 0.07746737190350542,
+            "z": -0.5212769013625687
+          },
+          "ANALOG": {
+            "mean": 0.35892299563739083,
+            "std_error": 0.0064095854789053466,
+            "variance": 0.041082786011394284,
+            "ms_per_trajectory": 1.7121914089998427,
+            "n_required": 1644,
+            "time_to_eps_s": 2.8148426763957413,
+            "z": 1.8072497528028062
+          }
+        }
+      },
+      {
+        "n": 5,
+        "dim": 32,
+        "exact": 0.34994364076350193,
+        "t_exact_s": 0.8494323869999789,
+        "kinds": {
+          "STANDARD": {
+            "mean": 0.3384120417693594,
+            "std_error": 0.009893234532611525,
+            "variance": 0.09787608951725718,
+            "ms_per_trajectory": 0.2269099809996078,
+            "n_required": 3916,
+            "time_to_eps_s": 0.8885794855944642,
+            "z": -1.1656045306649085
+          },
+          "PROJECTOR": {
+            "mean": 0.35011182307244143,
+            "std_error": 0.00525956616527478,
+            "variance": 0.027663036246903257,
+            "ms_per_trajectory": 0.21702944400021806,
+            "n_required": 1107,
+            "time_to_eps_s": 0.2402515945082414,
+            "z": 0.031976460349504
+          },
+          "ANALOG": {
+            "mean": 0.3574560906610221,
+            "std_error": 0.006060404103068532,
+            "variance": 0.03672849789248989,
+            "ms_per_trajectory": 8.205465580000237,
+            "n_required": 1470,
+            "time_to_eps_s": 12.062034402600348,
+            "z": 1.2395955401251886
+          }
+        }
+      }
+    ]
+  }
+}
