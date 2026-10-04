@@ -28,7 +28,9 @@ Minimum-weight perfect matching (MWPM) finds this pairing in polynomial time
 millions of shots. MWPM is the standard decoder because the matching structure
 is exact for this code and noise class (Y errors, which flip both types, are
 decomposed into an X and a Z part and the correlation between the two is
-dropped, which costs a small constant in the effective threshold).
+dropped, which costs a small constant in the effective threshold). Correlated
+matching (MatchingDecoder with correlated=True) puts part of that correlation back
+with a second matching pass.
 
 Threshold. Below a critical physical error rate p_th the logical error rate falls
 exponentially with distance,
@@ -62,7 +64,9 @@ code threshold", Nature 2025, as recalled, check against the paper before quotin
 
 Validate against: with p = 0 the detectors never fire and no shot fails, the
 logical error rate rises monotonically with p, falls with d below threshold, and
-the per-round conversion reproduces eps exactly for a known P_L.
+the per-round conversion reproduces eps exactly for a known P_L. For correlated
+matching: both decoders agree shot for shot when the noise has no Y-type
+mechanisms, and correlated matching fails less often on identical shots at d >= 5.
 """
 
 from __future__ import annotations
@@ -70,7 +74,7 @@ from __future__ import annotations
 import math
 import time
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Protocol, Sequence
 
 import numpy as np
 
@@ -81,7 +85,8 @@ except ImportError as exc:
     raise ImportError("SurfaceCode needs stim and pymatching: pip install stim pymatching") from exc
 
 __all__ = [
-    "SurfaceCodeMemory", "LogicalErrorRate", "LambdaEstimate", "BreakevenResult",
+    "SurfaceCodeMemory", "LogicalErrorRate", "PairedComparison", "Decoder", "MatchingDecoder",
+    "make_decoder", "LambdaEstimate", "BreakevenResult",
     "per_round_error", "per_round_error_se", "lambda_pairwise", "lambda_fit",
     "logical_lifetime", "breakeven", "run_scan",
 ]
@@ -150,16 +155,156 @@ class LogicalErrorRate:
                 f"eps={self.eps:.3e} +/- {self.eps_se:.1e}")
 
 
+def _logical_rate(distance: int, rounds: int, p: float, shots: int, errors: int,
+                  seconds: float) -> LogicalErrorRate:
+    p_l = errors / shots
+    se = math.sqrt(p_l * (1.0 - p_l) / shots)
+    return LogicalErrorRate(
+        distance=distance, rounds=rounds, p=p, shots=shots, errors=errors,
+        p_logical=p_l, se_logical=se,
+        eps=per_round_error(p_l, rounds),
+        eps_se=per_round_error_se(p_l, se, rounds),
+        seconds=seconds,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Noise models
+# ---------------------------------------------------------------------------
+
+def _sd6(p: float) -> dict:
+    return dict(after_clifford_depolarization=p, before_round_data_depolarization=p,
+                after_reset_flip_probability=p, before_measure_flip_probability=p)
+
+
+def _readout(p: float) -> dict:
+    # Only reset and measurement flips. Each is a single X flip, so no error
+    # mechanism flips detectors of both types and there are no Y-type hyperedges.
+    # Correlated matching has nothing to exploit here, which makes this model the
+    # negative control for it: both decoders must give identical predictions.
+    return dict(after_reset_flip_probability=p, before_measure_flip_probability=p)
+
+
+NOISE_MODELS = {"sd6": _sd6, "readout": _readout}
+
+
+# ---------------------------------------------------------------------------
+# Decoders
+# ---------------------------------------------------------------------------
+
+class Decoder(Protocol):
+    """Anything that maps detection events to a predicted logical flip.
+
+    `detections` is a (shots, num_detectors) boolean array and the return value a
+    (shots, num_observables) array of predicted observable flips. A shot counts
+    as a logical failure when the prediction differs from the sampled observable.
+    """
+
+    name: str
+
+    def decode_batch(self, detections: np.ndarray) -> np.ndarray: ...
+
+
+class MatchingDecoder:
+    """PyMatching MWPM, plain or with two-pass correlated matching.
+
+    Plain matching treats the X-type and Z-type syndrome graphs as independent. A
+    Y error, though, flips detectors in both, and stim's decompose_errors splits
+    it into an X-type edge and a Z-type edge joined by "^" in the detector error
+    model. Once a first matching has picked the X-type edge, the Z-type edge it is
+    paired with is more likely than its stand-alone weight says: an X-type flip
+    from a single-qubit depolarizing error is a Y error about half the time, and
+    then the Z-type edge fires with it.
+
+    Correlated matching (Fowler, arXiv:1310.0863) exploits this in two passes:
+      1. match with the stand-alone weights;
+      2. for every edge in that solution, lower the weight of the edges it was
+         decomposed together with, and match again.
+    The second pass is the output. It is a heuristic, not exact maximum-likelihood
+    decoding: if the first pass is wrong, the reweighting can reinforce the wrong
+    answer. It costs about two to three times the decoding time of plain matching.
+    """
+
+    def __init__(self, dem: stim.DetectorErrorModel, correlated: bool = False):
+        self.correlated = bool(correlated)
+        self.name = "correlated" if self.correlated else "mwpm"
+        # The matching graph must be built with correlations enabled for the
+        # second pass to know which edges belong together.
+        self.matching = pymatching.Matching.from_detector_error_model(
+            dem, enable_correlations=self.correlated)
+
+    def decode_batch(self, detections: np.ndarray) -> np.ndarray:
+        return self.matching.decode_batch(detections, enable_correlations=self.correlated)
+
+
+def make_decoder(spec, dem: stim.DetectorErrorModel) -> Decoder:
+    """Build a decoder from "mwpm", "correlated", or pass an object through.
+
+    A custom object needs a `name` and a `decode_batch` method (see Decoder).
+    """
+    if isinstance(spec, str):
+        if spec not in ("mwpm", "correlated"):
+            raise ValueError(f"unknown decoder {spec!r}; use 'mwpm', 'correlated' or a Decoder object")
+        return MatchingDecoder(dem, correlated=(spec == "correlated"))
+    if not (hasattr(spec, "decode_batch") and hasattr(spec, "name")):
+        raise ValueError("a custom decoder needs a `name` and a `decode_batch` method")
+    return spec
+
+
+@dataclass(frozen=True)
+class PairedComparison:
+    """Several decoders run on the same sampled shots at one (d, p).
+
+    Decoding identical syndromes removes the sampling noise from the comparison:
+    the difference in failures is set by the shots on which the decoders
+    disagree, not by how many shots each happened to fail on. The first decoder
+    is the reference. Sampling stops when the reference reaches max_errors, so
+    all decoders see the same shot count.
+    """
+
+    distance: int
+    rounds: int
+    p: float
+    shots: int
+    reference: str
+    rates: dict           # decoder name -> LogicalErrorRate (seconds = decode time)
+    only_reference: dict  # name -> shots where the reference fails and `name` succeeds
+    only_other: dict      # name -> shots where `name` fails and the reference succeeds
+
+    def reduction(self, name: str) -> tuple[float, float, float]:
+        """(fractional drop in failures against the reference, standard error, McNemar z).
+
+        With b = only_reference and c = only_other, the failure count falls by b - c.
+        The disagreeing shots are binomial with variance ~ b + c, so
+        z = (b - c) / sqrt(b + c) tests whether the two decoders really differ, and
+        se = sqrt(b + c) / k_ref. A negative value means `name` is worse.
+        """
+        k0 = self.rates[self.reference].errors
+        if name == self.reference:
+            return 0.0, 0.0, 0.0
+        if k0 == 0:
+            return float("nan"), float("nan"), float("nan")
+        b, c = self.only_reference[name], self.only_other[name]
+        spread = math.sqrt(b + c)
+        z = (b - c) / spread if spread > 0 else 0.0
+        return (b - c) / k0, spread / k0, z
+
+
 class SurfaceCodeMemory:
     """Distance-d rotated surface code memory under SD6 circuit-level noise.
 
     d >= 3 and odd. `rounds` defaults to d. `basis` is "z" (logical |0>, protected
     against X errors) or "x" (logical |+>, protected against Z errors). Under
     symmetric depolarizing noise the two give the same rate.
+
+    `decoder` is "mwpm" (plain matching, the default), "correlated" (two-pass
+    correlated matching) or a Decoder object. `noise` is "sd6" or "readout"
+    (reset and measurement flips only, a control with no Y-type correlations).
+    `compare` runs several decoders on identical shots.
     """
 
     def __init__(self, distance: int, p: float = DEFAULT_P, rounds: int | None = None,
-                 basis: str = "z"):
+                 basis: str = "z", decoder="mwpm", noise: str = "sd6"):
         if distance < MIN_DISTANCE or distance % 2 == 0:
             raise ValueError(f"distance must be odd and >= {MIN_DISTANCE}, got {distance}")
         if not 0.0 <= p <= 1.0:
@@ -169,21 +314,20 @@ class SurfaceCodeMemory:
             raise ValueError("rounds must be >= 1")
         if basis not in ("z", "x"):
             raise ValueError("basis must be 'z' or 'x'")
-        self.distance, self.p, self.rounds, self.basis = distance, p, rounds, basis
+        if noise not in NOISE_MODELS:
+            raise ValueError(f"unknown noise model {noise!r}; use one of {sorted(NOISE_MODELS)}")
+        self.distance, self.p, self.rounds, self.basis, self.noise = distance, p, rounds, basis, noise
 
         self.circuit = stim.Circuit.generated(
             f"surface_code:rotated_memory_{basis}",
             distance=distance,
             rounds=rounds,
-            after_clifford_depolarization=p,
-            before_round_data_depolarization=p,
-            after_reset_flip_probability=p,
-            before_measure_flip_probability=p,
+            **NOISE_MODELS[noise](p),
         )
         # decompose_errors splits Y-type and other multi-detector errors into
         # graphlike pieces so every mechanism is an edge for the matching graph.
         self.detector_error_model = self.circuit.detector_error_model(decompose_errors=True)
-        self.decoder = pymatching.Matching.from_detector_error_model(self.detector_error_model)
+        self.decoder = make_decoder(decoder, self.detector_error_model)
 
     @property
     def num_qubits(self) -> int:
@@ -215,15 +359,52 @@ class SurfaceCodeMemory:
             predictions = self.decoder.decode_batch(detections)
             errors += int(np.count_nonzero(np.any(predictions != observables, axis=1)))
             shots += n
-        p_l = errors / shots
-        se = math.sqrt(p_l * (1.0 - p_l) / shots)
-        return LogicalErrorRate(
-            distance=self.distance, rounds=self.rounds, p=self.p, shots=shots, errors=errors,
-            p_logical=p_l, se_logical=se,
-            eps=per_round_error(p_l, self.rounds),
-            eps_se=per_round_error_se(p_l, se, self.rounds),
-            seconds=time.perf_counter() - t0,
-        )
+        return _logical_rate(self.distance, self.rounds, self.p, shots, errors,
+                             time.perf_counter() - t0)
+
+    def compare(self, decoders: Sequence = ("mwpm", "correlated"),
+                max_shots: int = DEFAULT_MAX_SHOTS, max_errors: int = DEFAULT_MAX_ERRORS,
+                batch: int = DEFAULT_BATCH, seed: int | None = None) -> PairedComparison:
+        """Decode the same shots with every decoder in `decoders`.
+
+        The first decoder is the reference and sets the stopping rule (max_errors
+        failures or max_shots shots). Each decoder's `seconds` is its own decoding
+        time, with sampling excluded.
+        """
+        if max_shots < 1 or batch < 1 or max_errors < 1:
+            raise ValueError("max_shots, batch and max_errors must be >= 1")
+        if len(decoders) < 2:
+            raise ValueError("compare needs at least two decoders")
+        decs = [make_decoder(d, self.detector_error_model) for d in decoders]
+        names = [d.name for d in decs]
+        if len(set(names)) != len(names):
+            raise ValueError(f"decoder names must be distinct, got {names}")
+        ref = names[0]
+
+        sampler = self.circuit.compile_detector_sampler(seed=seed)
+        shots = 0
+        errors = {n: 0 for n in names}
+        seconds = {n: 0.0 for n in names}
+        only_ref = {n: 0 for n in names[1:]}
+        only_other = {n: 0 for n in names[1:]}
+        while shots < max_shots and errors[ref] < max_errors:
+            n_batch = min(batch, max_shots - shots)
+            detections, observables = sampler.sample(n_batch, separate_observables=True)
+            failed = {}
+            for dec in decs:
+                t0 = time.perf_counter()
+                predictions = dec.decode_batch(detections)
+                seconds[dec.name] += time.perf_counter() - t0
+                failed[dec.name] = np.any(predictions != observables, axis=1)
+                errors[dec.name] += int(np.count_nonzero(failed[dec.name]))
+            for n in names[1:]:
+                only_ref[n] += int(np.count_nonzero(failed[ref] & ~failed[n]))
+                only_other[n] += int(np.count_nonzero(~failed[ref] & failed[n]))
+            shots += n_batch
+        rates = {n: _logical_rate(self.distance, self.rounds, self.p, shots, errors[n], seconds[n])
+                 for n in names}
+        return PairedComparison(self.distance, self.rounds, self.p, shots, ref, rates,
+                                only_ref, only_other)
 
 
 # ---------------------------------------------------------------------------
@@ -412,6 +593,35 @@ def _self_test() -> None:
         except ValueError:
             continue
         raise AssertionError("expected ValueError")
+
+    # Decoder plumbing.
+    mem = SurfaceCodeMemory(3, 0.002, decoder="correlated")
+    assert mem.decoder.name == "correlated"
+    custom = make_decoder(MatchingDecoder(mem.detector_error_model), mem.detector_error_model)
+    assert custom.name == "mwpm"
+    for bad in (lambda: SurfaceCodeMemory(3, 0.001, decoder="nope"),
+                lambda: SurfaceCodeMemory(3, 0.001, noise="nope"),
+                lambda: make_decoder(object(), mem.detector_error_model),
+                lambda: mem.compare(decoders=("mwpm",)),
+                lambda: mem.compare(decoders=("mwpm", "mwpm"))):
+        try:
+            bad()
+        except ValueError:
+            continue
+        raise AssertionError("expected ValueError")
+
+    # Negative control: with only reset/measurement flips there are no Y-type
+    # mechanisms, so correlated matching must agree with plain MWPM shot for shot.
+    ctrl = SurfaceCodeMemory(5, 0.01, noise="readout").compare(
+        max_shots=20000, max_errors=10**9, batch=10000, seed=3)
+    assert ctrl.only_reference["correlated"] == 0 and ctrl.only_other["correlated"] == 0
+
+    # Under SD6 noise correlated matching beats plain MWPM at d = 5, on identical shots.
+    cmp5 = SurfaceCodeMemory(5, 0.004).compare(max_shots=100000, max_errors=10**9, seed=4)
+    red, se, z = cmp5.reduction("correlated")
+    assert red > 0.15 and z > 4, (red, se, z)
+    assert cmp5.rates["correlated"].shots == cmp5.rates["mwpm"].shots
+
     print("SurfaceCode: self-test passed")
 
 
